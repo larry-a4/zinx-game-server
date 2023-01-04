@@ -20,3 +20,4 @@ zinx框架
 ### 监听的端口
 
 ```GO111MODULE=off go run server.go```
+```GO111MODULE=off go run client.go```
