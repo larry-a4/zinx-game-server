@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 
+	"../utils"
 	"../ziface"
 )
 
@@ -47,8 +48,8 @@ func (c *Connection) StartReader() {
 	defer c.Stop()
 
 	for {
-		//读取客户端数据到buf，最大512byte
-		buf := make([]byte, 512)
+		//读取客户端数据到buf
+		buf := make([]byte, utils.GlobalObject.MaxPackageSize)
 		_, err := c.Conn.Read(buf)
 		if err != nil {
 			fmt.Println("recv buf err ", err)

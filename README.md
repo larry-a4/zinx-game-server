@@ -84,6 +84,20 @@ Connection类绑定一个Router成员
 在Connection调用，已经注册的Router处理业务
 ````
 
+## ZinxV0.4-全局配置
+
+### 服务器应用/conf/zinx.json(用户填写)
+
+#### 步骤
+````
+创建zinx全局配置模块 utils/globalobj.go
+提供一个全局的GlobalObject对象
+init时读取用户配置文件，写入globalobject对象
+将zinx框架中的硬代码，用globalobject中的参数替换
+````
+
+#### 方法
+
 ## 测试
 ````
 GO111MODULE=off go run server.go
