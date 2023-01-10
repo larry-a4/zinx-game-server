@@ -96,7 +96,43 @@ init时读取用户配置文件，写入globalobject对象
 将zinx框架中的硬代码，用globalobject中的参数替换
 ````
 
+## ZinxV0.5-消息封装
+
+### 定义消息结构Message
+
+#### 属性
+````
+消息ID
+消息长度
+消息内容
+````
+
 #### 方法
+````
+Getter/Setter
+````
+
+### 解决TCP粘包问题的封拆包模块
+
+#### 针对Message进行TLV格式封装 Pack(IMessage) ([]byte, error)
+````
+写message的长度
+写message的ID
+写message的内容
+````
+
+#### 针对Message进行TLV格式拆解 Unpack([]byte) (IMessage, error)
+````
+先读取固定长度
+再根据长度，读取内容
+````
+
+#### 将消息封装机制集成到Zinx框架中
+````
+将Message添加到Request属性中
+修改链接读取数据的机制：拆包并按照TLV形式读取
+提供发包机制：将数据打包，再发送
+````
 
 ## 测试
 ````

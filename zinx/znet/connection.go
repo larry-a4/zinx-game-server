@@ -1,10 +1,11 @@
 package znet
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"net"
 
-	"../utils"
 	"../ziface"
 )
 
@@ -49,17 +50,45 @@ func (c *Connection) StartReader() {
 
 	for {
 		//读取客户端数据到buf
-		buf := make([]byte, utils.GlobalObject.MaxPackageSize)
-		_, err := c.Conn.Read(buf)
-		if err != nil {
-			fmt.Println("recv buf err ", err)
-			continue
+		// buf := make([]byte, utils.GlobalObject.MaxPackageSize)
+		// _, err := c.Conn.Read(buf)
+		// if err != nil {
+		// 	fmt.Println("recv buf err ", err)
+		// 	continue
+		// }
+
+		//创建拆包解包对象
+		dp := NewDataPack()
+
+		//读取客户端的Msg Head（二进制流8字节）
+		headData := make([]byte, dp.GetHeadLen())
+		if _, err := io.ReadFull(c.GetTCPConnection(), headData); err != nil {
+			fmt.Println("read msg head error: ", err)
+			break
 		}
+
+		//拆包，得到 MsgId 和 MsgDataLen，放入msg消息中
+		msg, err := dp.Unpack(headData)
+		if err != nil {
+			fmt.Println("unpack error: ", err)
+			break
+		}
+
+		//根据 DataLen 再次读取 Data，放在 msg.Data 中
+		var data []byte
+		if msg.GetMsgLen() > 0 {
+			data = make([]byte, msg.GetMsgLen())
+			if _, err := io.ReadFull(c.GetTCPConnection(), data); err != nil {
+				fmt.Println("read msg data error: ", err)
+				break
+			}
+		}
+		msg.SetData(data)
 
 		//得到当前conn的request数据
 		req := Request{
 			conn: c,
-			data: buf,
+			msg:  msg,
 		}
 
 		go func(request ziface.IRequest) {
@@ -113,7 +142,25 @@ func (c *Connection) RemoteAddr() net.Addr {
 	return c.Conn.RemoteAddr()
 }
 
-//发送数据，将数据发送给远程客户端
-func (c *Connection) Send(data []byte) error {
+//提供 SendMsg 方法，将我们要发送客户端的数据，先进行封包，再发送
+func (c *Connection) SendMsg(msgId uint32, data []byte) error {
+	if c.isClosed {
+		return errors.New("Connection closed when send msg")
+	}
+	//将data封包, MsgDataLen|MsgId|Data
+	dp := NewDataPack()
+
+	msgInBytes, err := dp.Pack(NewMsgPackage(msgId, data))
+	if err != nil {
+		fmt.Println("pack error msg id =", msgId)
+		return errors.New("pack error msg")
+	}
+
+	//将数据发送给客户端
+	if _, err := c.Conn.Write(msgInBytes); err != nil {
+		fmt.Println("write msg id ", msgId, " error: ", err)
+		return errors.New("conn write error")
+	}
+
 	return nil
 }
