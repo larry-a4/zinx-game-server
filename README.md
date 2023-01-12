@@ -148,6 +148,15 @@ init时读取用户配置文件，写入globalobject对象
 4-将Connection的之前调度router的业务替换成MsgHandler调度，修改StartReader
 ````
 
+## ZinxV0.7-读写协程分离
+
+````
+1-添加Reader和Writer之间通信的channel
+2-添加writer goroutine
+3-Reader由直接发送给client，改成发送给通信channel
+4-启动Reader和Writer一同工作
+````
+
 ## 测试
 ````
 GO111MODULE=off go run server.go
