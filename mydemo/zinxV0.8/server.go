@@ -49,7 +49,7 @@ func (this *HelloRouter) Handle(req ziface.IRequest) {
 
 func main() {
 	//1 创建一个server句柄，使用Zinx的api
-	s := znet.NewServer("[zinx V0.7]")
+	s := znet.NewServer("[zinx V0.8]")
 	//2 给zinx添加一个自定义router
 	s.AddRouter(0, &PingRouter{})
 	s.AddRouter(1, &HelloRouter{})

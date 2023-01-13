@@ -149,12 +149,38 @@ init时读取用户配置文件，写入globalobject对象
 ````
 
 ## ZinxV0.7-读写协程分离
-
 ````
 1-添加Reader和Writer之间通信的channel
 2-添加writer goroutine
 3-Reader由直接发送给client，改成发送给通信channel
 4-启动Reader和Writer一同工作
+````
+
+## ZinxV0.8-消息队列/多任务处理机制
+
+### 1-创建消息队列（msgHandler模块）
+#### 属性
+````
+TaskQueue []chan IRequest
+WorkerPoolSize uint32 
+````
+### 2-创建多任务worker的工作池并且启动
+#### 开启一个worker pool - StartWorkerPool()
+````
+1-创建pool size个worker，每个worker开一个go - StartOneWorker(workerID, taskQueue)
+2-阻塞等待当前worker对应channel的消息
+3-一旦有消息到来，对应的worker处理消息，调用DoMsgHandler()
+````
+### 3-将发送消息，改为 把消息发送给消息队列和worker池 处理
+#### 定义一个方法，将消息发送给消息队列worker pool
+````
+1-保证每个worker收到的request均衡，也就是发给对应worker的taskQueue
+2-将消息直接发送到对应的channel
+````
+### 4-集成到zinx框架
+````
+1-开启并调用worker pool（必须保证只有一个，最好在server模块init时开启）
+2-将从client收到的消息，发送给worker pool来处理
 ````
 
 ## 测试

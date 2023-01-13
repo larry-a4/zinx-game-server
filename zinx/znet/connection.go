@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 
+	"../utils"
 	"../ziface"
 )
 
@@ -95,9 +96,13 @@ func (c *Connection) StartReader() {
 			msg:  msg,
 		}
 
-		//从路由中找到注册绑定的Conn对应的router调用
-		go c.MsgHandler.DoMsgHandler(&req)
-
+		if utils.GlobalObject.WorkerPoolSize > 0 {
+			//已开启工作池，将消息发送给worker pool
+			c.MsgHandler.SendMsgToTaskQueue(&req)
+		} else {
+			//从路由中找到注册绑定的Conn对应的router调用
+			go c.MsgHandler.DoMsgHandler(&req)
+		}
 	}
 }
 
