@@ -183,6 +183,42 @@ WorkerPoolSize uint32
 2-将从client收到的消息，发送给worker pool来处理
 ````
 
+## ZinxV0.9-链接管理模块
+### 1-创建链接管理模块 ConnManager
+#### 属性
+````
+已经创建的Connection - map[uint32]IConnection
+针对map的互斥锁 - connLock sync.RWMutex
+````
+#### 方法
+````
+添加链接 - Add(IConnection)
+删除链接 - Remove(IConnection)
+查找链接 - Get(connID uint32) (IConnection, error)
+总链接数 - Len() int
+清理全部链接 - ClearConn()
+````
+### 2-集成到zinx框架中
+````
+将conn Manager加入Server模块中：添加ConnMgr属性，初始化ConnMgr，server停止时ClearConn
+每次成功与client建立链接时，添加链接：NewConnection时将conn加入ConnMgr
+判断当前的链接数量是否已经超出最大值MaxConn
+每次与client断开链接时，删除链接：在Conn.Stop时，从ConnMgr中移除conn
+````
+### 3-提供业务所需要的hook
+#### 属性
+````
+创建链接后hook - OnConnStart(hookFunc func (IConnection)
+销毁链接前hook - OnConnStop(hookFunc func (IConnection))
+````
+#### 方法
+````
+注册OnConnStart 钩子的方法
+注册OnConnStop 钩子的方法
+调用OnConnStart 钩子的方法
+调用OnConnStop 钩子的方法
+````
+
 ## 测试
 ````
 GO111MODULE=off go run server.go
