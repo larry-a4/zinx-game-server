@@ -1,5 +1,5 @@
 {
-    "Name": "zinx v0.9 demoApp",
+    "Name": "zinx v1.0 demoApp",
     "TcpPort": 8999,
     "Host": "127.0.0.1",
     "MaxConn": 2,

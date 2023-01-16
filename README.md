@@ -219,6 +219,20 @@ WorkerPoolSize uint32
 调用OnConnStop 钩子的方法
 ````
 
+## ZinxV1.0-链接属性配置
+### 给Connection模块添加可配置属性
+#### 属性
+````
+链接属性集合 - map[string]interface{}
+保护链接属性的锁 - sync.RWMutex
+````
+#### 方法
+````
+设置链接属性 - SetProperty(key, value)
+获取链接属性 - GetProperty(key)interface{}
+移除链接属性 - RemoveProperty(key)
+````
+
 ## 测试
 ````
 GO111MODULE=off go run server.go
