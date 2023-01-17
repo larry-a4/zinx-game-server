@@ -233,6 +233,56 @@ WorkerPoolSize uint32
 移除链接属性 - RemoveProperty(key)
 ````
 
+## Zinx应用-MMO多人在线网游
+
+### AOI目标范围算法
+#### 格子属性
+````
+格子ID - gID
+格子左边界坐标
+格子右边界坐标
+格子上边界坐标
+格子下边界坐标
+格子给玩家/物体的ID集合 - map
+保护当前集合的锁
+````
+#### 格子方法
+````
+初始化 - NewGrid(gID, minX, maxX, minY, maxY) *Grid
+添加一个玩家/物体 - Add(playerID int)
+删除一个玩家/物体 - Remove(playerID int)
+得到当前格子中所有玩家/物体 - GetPlayerIDs() (playerIDs []int)
+调试使用-打印出格子的基本信息 - String()
+````
+#### AOI地图管理属性
+````
+区域左边界坐标
+区域右边界坐标
+X方向的格子数量 - countX
+区域上边界坐标
+区域下边界坐标
+Y方向的格子数量 - countY
+当前区域中有哪些格子 - map[gID] *Grid
+````
+#### AOI地图管理方法
+````
+初始化 - NewAOIManager(minX, maxX, countX, minY, maxY, countY int) *AOIManager
+调试使用-打印当前AOI模块 - String()
+获取周边九宫格信息
+添加playerID到格子
+移除playerID从格子
+获取一个格子中全部playerID
+通过坐标将Player添加到一个格子
+通过坐标将Player从一个格子中移除
+通过坐标获取周边九宫格内全部playerID
+通过坐标获取玩家所在的gID
+````
+
+### Protobuf传输协议
+
+### 玩家的业务
+
+
 ## 测试
 ````
 GO111MODULE=off go run server.go
