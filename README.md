@@ -280,8 +280,54 @@ Y方向的格子数量 - countY
 
 ### Protobuf传输协议
 
-### 玩家的业务
+## 游戏业务
+### 协议定义
+````
+msgID:1 - SyncPid { int32 Pid=1 } 同步玩家本次登录的ID，登录时由Server主动生成发送给Client
+msgID:2 - Talk { string Content=1 } 由Client发起，聊天信息为Content
+msgID:3 - Position { float X=1; float Y=2; float Z=3; float V=4 } 由Client发起，移动的坐标
+msgID:200 - Broadcast {int32 Pid=1; int32 Tp=2; oneof Data} 由Server发起，Tp:1-世界聊天，2-坐标，3-动作，4-坐标信息更新
+    Data { string Content=3; Position P=4; int32 ActionData=5 }
+msgID:201 - SyncPid {int32 Pid=1 } 由Server发起，广播玩家掉线
+msgID:202 - SyncPlayers { repeated Player ps=1 } 由Server发起，同步周围人的位置信息（包括自己）
+    Player { int32 Pid=1; Position P2 }
+````
 
+### 项目构建
+````
+api - 存放用户自定义的路由业务，一个msgID对应一个业务
+conf - zinx.json 存放zinx配置文件
+pb - msg.proto 原始protobuf定义文件
+     build.sh 编译 msg.proto 的脚本
+     msg.pb.go 编译生成的go文件（只读）
+core - 存放游戏核心功能
+main.go - 服务器主入口
+````
+
+### 玩家上线
+#### 先定义proto协议，生成对应的pb.go文件
+#### 玩家模块属性
+````
+玩家ID
+链接信息（用于和对应客户端通信的connection
+玩家当前坐标
+````
+#### 玩家模块方法
+````
+创建玩家的方法 NewPlayer(conn) *Player
+玩家和客户端通信的方法 SendMsg(msgId, proto.Message)
+````
+
+#### 实现上线业务功能
+````
+给server注册一个创建链接后的hook：给客户端发送 msgID=1 和 msgID=200
+给player提供方法：1-同步PlayerID给客户端
+给player提供方法：2-同步上线位置给客户端
+````
+#### 测试上线功能
+````
+GO111MODULE=off go run main.go
+````
 
 ## 测试
 ````

@@ -117,7 +117,7 @@ func (m *AOIManager) GetPidsByPos(x, y float32) (playerIDs []int) {
 
 	//将九宫格信息里全部的player加入到playerIDs
 	for _, v := range grids {
-		playerIDs = append(playerIDs, v.GetPlayerIDs())
+		playerIDs = append(playerIDs, v.GetPlayerIDs()...)
 	}
 	return
 }
