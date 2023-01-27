@@ -23,3 +23,16 @@ message BroadCast {
         int32 ActionData=5; //玩家具体的动作
     }
 }
+
+message Talk {
+    string Content=1;
+}
+
+message SyncPlayers {
+    repeated Player ps=1;
+}
+
+message Player {
+    int32 Pid=1;
+    Position P=2;
+}

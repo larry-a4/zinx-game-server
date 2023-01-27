@@ -92,3 +92,70 @@ func (p *Player) BroadcastStartPosition() {
 	//发给客户端
 	p.SendMsg(200, protoMsg)
 }
+
+func (p *Player) Talk(content string) {
+	//1 组建MsgID=200的proto数据
+	proto_msg := &pb.BroadCast{
+		Pid: p.Pid,
+		Tp:  1, //tp-1 聊天广播
+		Data: &pb.BroadCast_Content{
+			Content: content,
+		},
+	}
+	//2 得到当前世界所有的在线玩家
+	players := WorldMgrObj.GetAllPlayers()
+
+	//3 向所有玩家（包括自己）发送MsgID=200消息
+	for _, player := range players {
+		//向每个player对应的客户端发送消息
+		player.SendMsg(200, proto_msg)
+	}
+}
+
+func (p *Player) SyncSurrounding() {
+	// 1 获取玩家周围九宫格的玩家
+	neighborIDs := WorldMgrObj.AoiMgr.GetPidsByPos(p.X, p.Z)
+	neighbors := make([]*Player, len(neighborIDs))
+	for i, pid := range neighborIDs {
+		neighbors[i] = WorldMgrObj.GetPlayerByPid(int32(pid))
+	}
+
+	// 2 当前位置通过MsgID=200广播给周围（别人看到自己）
+	// 2.1 组建广播消息200
+	protoMsg := &pb.BroadCast{
+		Pid: p.Pid,
+		Tp:  2,
+		Data: &pb.BroadCast_P{
+			P: &pb.Position{
+				X: p.X,
+				Y: p.Y,
+				Z: p.Z,
+				V: p.V,
+			},
+		},
+	}
+	// 2.2 向每个周围玩家发送信息
+	for _, n := range neighbors {
+		n.SendMsg(200, protoMsg)
+	}
+
+	// 3 将周围玩家的位置发送给当前玩家 MsgID=202
+	// 3.1 组建广播消息202
+	neighborPositions := make([]*pb.Player, len(neighbors))
+	for i, n := range neighbors {
+		neighborPositions[i] = &pb.Player{
+			Pid: n.Pid,
+			P: &pb.Position{
+				X: n.X,
+				Y: n.Y,
+				Z: n.Z,
+				V: n.V,
+			},
+		}
+	}
+	protoMsg202 := &pb.SyncPlayers{
+		Ps: neighborPositions[:],
+	}
+	// 3.2 发送给当前玩家
+	p.SendMsg(202, protoMsg202)
+}
