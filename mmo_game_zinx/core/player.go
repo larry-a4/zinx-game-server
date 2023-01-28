@@ -183,13 +183,32 @@ func (p *Player) UpdatePos(x, y, z, v float32) {
 	}
 
 	//获取周围九宫格的玩家
+	neighbors := p.GetSurroundingPlayers()
+
+	for _, n := range neighbors {
+		n.SendMsg(200, protoMsg)
+	}
+}
+
+func (p *Player) Offline() {
+	// 获取周围九宫格玩家
+	neighbors := p.GetSurroundingPlayers()
+	// 广播MsgID=201
+	protoMsg := &pb.BroadCast{
+		Pid: p.Pid,
+	}
+	for _, n := range neighbors {
+		n.SendMsg(201, protoMsg)
+	}
+	WorldMgrObj.AoiMgr.RemoveFromGridByPos(int(p.Pid), p.X, p.Z)
+	WorldMgrObj.RemovePlayer(p.Pid)
+}
+
+func (p *Player) GetSurroundingPlayers() []*Player {
 	neighborIDs := WorldMgrObj.AoiMgr.GetPidsByPos(p.X, p.Z)
 	neighbors := make([]*Player, len(neighborIDs))
 	for i, pid := range neighborIDs {
 		neighbors[i] = WorldMgrObj.GetPlayerByPid(int32(pid))
 	}
-
-	for _, n := range neighbors {
-		n.SendMsg(200, protoMsg)
-	}
+	return neighbors
 }

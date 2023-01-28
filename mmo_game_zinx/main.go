@@ -31,12 +31,25 @@ func OnConnectionAdd(conn ziface.IConnection) {
 	fmt.Println("-------> Player pid = ", player.Pid, " is arrived<------")
 }
 
+func OnConnectionLost(conn ziface.IConnection) {
+	// 给server注册链接断开前hook
+	pid, _ := conn.GetProperty("pid")
+	// 通过链接属性得到pid
+	player := core.WorldMgrObj.GetPlayerByPid(pid.(int32))
+
+	// 触发玩家下线业务
+	player.Offline()
+
+	fmt.Println("------>Player pid = ", pid, " offline<-----")
+}
+
 func main() {
 	//创建zinx server handler
 	s := znet.NewServer("Zinx MMO Game")
 
 	//链接创建和销毁的hook
 	s.SetOnConnStart(OnConnectionAdd)
+	s.SetOnConnStop(OnConnectionLost)
 
 	//注册路由业务
 	s.AddRouter(2, &api.WorldChatApi{})
